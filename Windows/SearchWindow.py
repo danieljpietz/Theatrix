@@ -1,7 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget, QLineEdit, QListWidget
+from PyQt5.QtWidgets import QWidget, QLineEdit, QListWidget, QScrollArea, QLabel, QVBoxLayout
 from PyQt5.QtGui import QPalette, QPainter, QBrush, QPen, QColor, QLinearGradient
 from PyQt5.QtCore import Qt, QRect
+
+from Widgets.SearchListEntry import *
 
 import numpy as np
 
@@ -16,17 +18,32 @@ class SearchWindow(QtWidgets.QWidget):
         self.initHeight = 400
         self.width = self.initWidth
         self.height = self.initHeight
+        self.resize(self.width, self.height)
         self.textbox = QLineEdit(self)
         self.textbox.move(20, 20)
         self.textbox.resize(self.width - 40, 30)
         self.textbox.setStyleSheet("color: rgb(255, 255, 255);")
-        self.cb = QListWidget()
-        self.cb.move(20,60)
-        self.cb.insertItem(0, "Red")
-        self.cb.insertItem(1, "Orange")
-        self.cb.insertItem(2, "Blue")
-        self.cb.setParent(self)
+        self.scroll = QScrollArea()  # Scroll Area which contains the widgets, set as the centralWidget
+        self.widget = QWidget()  # Widget that contains the collection of Vertical Box
+        self.vbox = QVBoxLayout()  # The Vertical Box that contains the Horizontal Boxes of  labels and buttons
 
+        self.objects = 50 * [None]
+
+        for i in range(1, 50):
+            self.objects[i] = QLabel(str(i))
+            self.objects[i].setStyleSheet("color: rgb(255, 255, 255);")
+            self.vbox.addWidget(self.objects[i])
+
+        self.widget.setLayout(self.vbox)
+
+        # Scroll Area Properties
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.widget)
+        self.scroll.setParent(self)
+        self.scroll.move(20, 70)
+        self.scroll.resize(self.width - 40, self.height - 70 - 20)
+        self.scroll.show()
 
 
 
@@ -41,3 +58,11 @@ class SearchWindow(QtWidgets.QWidget):
         painter.setBrush(QBrush(QColor(self.brushColor[0], self.brushColor[1], self.brushColor[2], self.brushColor[3]), Qt.SolidPattern))
         #painter.setBrush(QBrush(gradient))
         painter.drawRoundedRect(0, 0, self.width, self.height, np.sqrt(self.width), np.sqrt(self.height))
+
+    def mousePressEvent(self, event):
+        self.lastTouch = event.pos()
+        self.position = self.pos()
+        pass
+
+    def mouseMoveEvent(self, event):
+        self.move(self.pos() + event.pos() - self.lastTouch)

@@ -55,12 +55,19 @@ class MainWindow(QMainWindow):
         #self.setCentralWidget(self.view)
         self.showMaximized()
 
+        self.searchWindow = SearchWindow()
+        self.searchWindow.setParent(self)
+        self.searchWindowIsOpen = False
         self.bricks = []
         self.hotMousePosition = []
         self.mouseIsHot = False
         self.hotPort = []
 
         pass
+
+    def mousePressEvent(self, event):
+        if self.searchWindowIsOpen:
+            self.hideSearchWindow()
 
     def mouseDoubleClickEvent(self, event):
         """
@@ -71,10 +78,21 @@ class MainWindow(QMainWindow):
         b1.show()
         self.bricks.append(b1)
         """
-        search = SearchWindow()
-        search.setParent(self)
-        search.move(event.pos().x() - search.width/2,event.pos().y() - np.sqrt(search.height))
-        search.show()
+
+        if not self.searchWindowIsOpen:
+            self.launchSearchWindow(event.pos())
+        else:
+            self.searchWindow.move(event.pos().x() - self.searchWindow.width / 2, event.pos().y() - self.searchWindow.height/2)
+
+    def launchSearchWindow(self, pos):
+        self.searchWindowIsOpen = True
+        self.searchWindow.move(pos.x() - self.searchWindow.width / 2, pos.y() - self.searchWindow.height/2)
+        self.searchWindow.show()
+        pass
+
+    def hideSearchWindow(self):
+        self.searchWindowIsOpen = False
+        self.searchWindow.hide()
 
     def mouseMoveEvent(self, event):
         pass
@@ -106,3 +124,10 @@ class MainWindow(QMainWindow):
             painter.drawLine(majorGridSpacing*minorGridSpacing*i, 0, majorGridSpacing*minorGridSpacing*i, lineLength)
             painter.drawLine(0, majorGridSpacing*minorGridSpacing*i, lineLength, majorGridSpacing*minorGridSpacing*i)
             pass
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            if self.searchWindowIsOpen:
+                self.hideSearchWindow()
+            else:
+                self.launchSearchWindow(self.mapFromGlobal(QtGui.QCursor.pos()))

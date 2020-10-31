@@ -1,9 +1,9 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget, QLabel
-from PyQt5.QtGui import QPalette, QPainter, QBrush, QPen, QColor, QLinearGradient
-from PyQt5.QtCore import Qt, QRect
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QLinearGradient
+from PyQt5.QtCore import Qt
 
-from Widgets.Port import Port
+from GUI.Widgets.Port import Port
 
 import numpy as np
 
@@ -11,20 +11,32 @@ import numpy as np
 class Brick(QtWidgets.QWidget):
     def __init__(self, steps = 0, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.bannerColor = [255, 0, 0, 200]
+        self.bannerColor = [255, 255, 255, 200]
         self.brushColor = [10, 10, 10, 200]
+        self.penColor = [200, 200, 200, 200]
         self.initWidth = 400
         self.initHeight = 400
         self.width = self.initWidth
         self.height = self.initHeight
-        self.title = "Brick"
-        self.inputs = ['Input 1']
-        self.outputs = ['Output 1']
-        self.inputCount = len(self.inputs)
-        self.outputCount = len(self.outputs)
-        self.inputPorts = []
-        self.outputPorts = []
+        self.setupTitle("Brick")
+        self.setInputs([])
+        self.setOutputs([])
         self.addPorts()
+
+    def setInputs(self, inputs):
+        self.inputs = inputs
+        self.inputCount = len(self.inputs)
+        self.inputPorts = []
+
+
+    def setOutputs(self, outputs):
+        self.outputs = outputs
+        self.outputCount = len(self.outputs)
+        self.outputPorts = []
+
+
+    def setupTitle(self, title):
+        self.title = title
         self.titleLabel = QLabel(self.title)
         self.titleLabel.setParent(self)
         self.titleLabel.move(4, 4)
@@ -33,6 +45,11 @@ class Brick(QtWidgets.QWidget):
         titleFont.setBold(True)
         self.titleLabel.setFont(titleFont)
         self.titleLabel.adjustSize()
+
+    def setTitle(self, title):
+        self.titleLabel.setText(title)
+        self.titleLabel.adjustSize()
+
 
 
     def setParentWindow(self, window):
@@ -85,11 +102,12 @@ class Brick(QtWidgets.QWidget):
 
 
 
+
     def paintEvent(self, event):
-        penColor = [200, 200, 200, 200]
+
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing);
-        painter.setPen(QPen(QColor(penColor[0], penColor[1], penColor[2], penColor[3]),  2, Qt.SolidLine))
+        painter.setPen(QPen(QColor(self.penColor[0], self.penColor[1], self.penColor[2], self.penColor[3]),  2, Qt.SolidLine))
         gradient = QLinearGradient(0, 0, self.width, 0)
         gradient.setColorAt(0.0, QColor(self.bannerColor[0], self.bannerColor[1], self.bannerColor[2], self.bannerColor[3]))
         gradient.setColorAt(0.85, QColor(self.brushColor[0], self.brushColor[1], self.brushColor[2], self.brushColor[3]))
@@ -97,7 +115,7 @@ class Brick(QtWidgets.QWidget):
         #painter.setBrush(QBrush(gradient))
         painter.drawRoundedRect(0, 0, self.width, self.height, 0, np.sqrt(self.height))
         painter.setBrush(QBrush(gradient))
-        painter.setPen(QPen(QColor(penColor[0], penColor[1], penColor[2], 0),  0, Qt.SolidLine))
+        painter.setPen(QPen(QColor(self.penColor[0], self.penColor[1], self.penColor[2], 0),  0, Qt.SolidLine))
         painter.drawRect(2, 2, self.width - 4, 2*np.sqrt(self.height))
 
     def mousePressEvent(self,event):

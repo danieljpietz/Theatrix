@@ -9,7 +9,7 @@ from PyQt5.QtGui import QPainter, QBrush, QPen, QColor
 from PyQt5.QtCore import Qt, QEvent
 
 from Widgets.widgets import *
-
+from Windows.SearchWindow import *
 import numpy as np
 
 class GraphicsScene(QtWidgets.QGraphicsScene):
@@ -63,12 +63,18 @@ class MainWindow(QMainWindow):
         pass
 
     def mouseDoubleClickEvent(self, event):
+        """
         b1 = Brick()
         b1.setParentWindow(self)
         b1.setParent(self)
         b1.move(event.pos().x() - b1.width/2,event.pos().y() - np.sqrt(b1.height))
         b1.show()
         self.bricks.append(b1)
+        """
+        search = SearchWindow()
+        search.setParent(self)
+        search.move(event.pos().x() - search.width/2,event.pos().y() - np.sqrt(search.height))
+        search.show()
 
     def mouseMoveEvent(self, event):
         pass

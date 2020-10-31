@@ -2,3 +2,4 @@
 ## All window files for windows in Theatrix
 
 from Windows.MainWindow import *
+from Windows.SearchWindow import *

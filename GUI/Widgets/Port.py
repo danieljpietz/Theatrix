@@ -1,11 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPalette, QPainter, QBrush, QPen, QColor, QLinearGradient
-from PyQt5.QtCore import Qt, QRect
-
-from Widgets.widgets import *
-
-import numpy as np
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QPainter, QBrush, QPen, QColor
+from PyQt5.QtCore import Qt
 
 
 class Port(QtWidgets.QWidget):
@@ -35,15 +30,14 @@ class Port(QtWidgets.QWidget):
     def mousePressEvent(self,event):
         self.parent.parentWindow.mouseIsHot = True
         self.parent.parentWindow.hotPort = self
-        print("HOT")
         pass
 
     def mouseReleaseEvent(self,event):
         self.parent.parentWindow.mouseIsHot = False
         self.parent.parentWindow.hotPort = None
-        print("Not HOT")
         pass
 
     def mouseMoveEvent(self,event):
         self.parent.parentWindow.hotMousePosition = event.pos() + self.pos()
+        self.parent.parentWindow.repaint()
         pass

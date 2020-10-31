@@ -1,9 +1,7 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget, QLineEdit, QListWidget, QScrollArea, QLabel, QVBoxLayout
-from PyQt5.QtGui import QPalette, QPainter, QBrush, QPen, QColor, QLinearGradient
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtWidgets import QWidget, QLineEdit, QScrollArea, QLabel, QVBoxLayout
+from PyQt5.QtGui import QColor, QLinearGradient
 
-from Widgets.SearchListEntry import *
+from GUI.Widgets.SearchListEntry import *
 
 import numpy as np
 

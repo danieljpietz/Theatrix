@@ -3,20 +3,25 @@
 ## All main window stuff goes here
 ##
 
-from PyQt5 import QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QScrollArea, QWidget, QGridLayout, QPushButton
-from PyQt5.QtGui import QPainter, QBrush, QPen, QColor
-from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtWidgets import QMainWindow, QGridLayout
+from PyQt5.QtGui import QPainterPath
+from PyQt5.QtCore import QPoint
 
-from Widgets.widgets import *
-from Windows.SearchWindow import *
+
+from GUI.Windows.SearchWindow import *
+from GUI.Widgets.Brick import *
+
+from GUI.Widgets.Fixture import *
+from GUI.Widgets.Functions import *
+from GUI.Widgets.Inputs import *
 import numpy as np
+
 
 class GraphicsScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent=None):
         super(GraphicsScene, self).__init__(parent)
         self.setSceneRect(0, 0, 2560,1343)
-        pass
+
 
     def drawBackground(self, painter, rect):
         minorGridSpacing = 25
@@ -32,13 +37,13 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
         for i in range(0, lineCount):
             painter.drawLine(minorGridSpacing*i, 0, minorGridSpacing*i, lineLength)
             painter.drawLine(0, minorGridSpacing*i, lineLength, minorGridSpacing*i)
-        pass
+
         painter.setPen(QPen(QColor(majorGridColor[0], majorGridColor[1], majorGridColor[2], majorGridColor[3]),  2, Qt.SolidLine))
 
         for i in range(0, lineCount):
             painter.drawLine(majorGridSpacing*minorGridSpacing*i, 0, majorGridSpacing*minorGridSpacing*i, lineLength)
             painter.drawLine(0, majorGridSpacing*minorGridSpacing*i, lineLength, majorGridSpacing*minorGridSpacing*i)
-            pass
+
 
 
 
@@ -63,6 +68,29 @@ class MainWindow(QMainWindow):
         self.mouseIsHot = False
         self.hotPort = []
 
+        b1 = Fixture()
+        b1.setParentWindow(self)
+        b1.setParent(self)
+        #b1.move(event.pos().x() - b1.width / 2, event.pos().y() - np.sqrt(b1.height))
+        b1.move(400 - b1.width / 2, 400 - np.sqrt(b1.height))
+        b1.show()
+
+        b1 = BrickSine()
+        b1.setParentWindow(self)
+        b1.setParent(self)
+        # b1.move(event.pos().x() - b1.width / 2, event.pos().y() - np.sqrt(b1.height))
+        b1.move(200 - b1.width / 2, 400 - np.sqrt(b1.height))
+        b1.show()
+
+        b1 = BrickTime()
+        b1.setParentWindow(self)
+        b1.setParent(self)
+        # b1.move(event.pos().x() - b1.width / 2, event.pos().y() - np.sqrt(b1.height))
+        b1.move(100 - b1.width / 2, 400 - np.sqrt(b1.height))
+        b1.show()
+
+        self.bricks.append(b1)
+
         pass
 
     def mousePressEvent(self, event):
@@ -70,14 +98,6 @@ class MainWindow(QMainWindow):
             self.hideSearchWindow()
 
     def mouseDoubleClickEvent(self, event):
-        """
-        b1 = Brick()
-        b1.setParentWindow(self)
-        b1.setParent(self)
-        b1.move(event.pos().x() - b1.width/2,event.pos().y() - np.sqrt(b1.height))
-        b1.show()
-        self.bricks.append(b1)
-        """
 
         if not self.searchWindowIsOpen:
             self.launchSearchWindow(event.pos())
@@ -93,9 +113,6 @@ class MainWindow(QMainWindow):
     def hideSearchWindow(self):
         self.searchWindowIsOpen = False
         self.searchWindow.hide()
-
-    def mouseMoveEvent(self, event):
-        pass
 
 
     def mouseReleaseEvent(self, event):
@@ -117,13 +134,28 @@ class MainWindow(QMainWindow):
         for i in range(0, lineCount):
             painter.drawLine(minorGridSpacing*i, 0, minorGridSpacing*i, lineLength)
             painter.drawLine(0, minorGridSpacing*i, lineLength, minorGridSpacing*i)
-        pass
-        painter.setPen(QPen(QColor(majorGridColor[0], majorGridColor[1], majorGridColor[2], majorGridColor[3]),  2, Qt.SolidLine))
+
+        painter.setPen(
+            QPen(QColor(majorGridColor[0], majorGridColor[1], majorGridColor[2], majorGridColor[3]), 2, Qt.SolidLine))
 
         for i in range(0, lineCount):
             painter.drawLine(majorGridSpacing*minorGridSpacing*i, 0, majorGridSpacing*minorGridSpacing*i, lineLength)
             painter.drawLine(0, majorGridSpacing*minorGridSpacing*i, lineLength, majorGridSpacing*minorGridSpacing*i)
-            pass
+
+
+        painter.setPen(
+            QPen(QColor(255,255,255), 2, Qt.SolidLine))
+        painter.setRenderHint(QPainter.Antialiasing)
+        if(self.mouseIsHot):
+            mousePos = self.mapFromGlobal(QtGui.QCursor.pos())
+            hotPortLoc = self.hotPort.parent.pos() +  self.hotPort.pos() + QPoint(self.hotPort.width/2, self.hotPort.height/2)
+            path = QPainterPath()
+            path.moveTo(hotPortLoc)
+            ##TODO CUBIC PATH
+            #path.cubicTo(hotPortLoc.x(),hotPortLoc.y() - 10, 0, mousePos.y() + 10, mousePos.x(), mousePos.y())
+            painter.drawPath(path)
+            painter.drawLine(hotPortLoc.x(), hotPortLoc.y(), mousePos.x(), mousePos.y())
+
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Space:

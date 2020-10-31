@@ -1,11 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPalette, QPainter, QBrush, QPen, QColor, QLinearGradient
-from PyQt5.QtCore import Qt, QRect
-
-from Widgets.widgets import *
-
-import numpy as np
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QPainter, QBrush, QPen
+from PyQt5.QtCore import Qt
 
 
 class SearchListEntry(QtWidgets.QWidget):

@@ -9,7 +9,7 @@ import numpy as np
 
 
 class Brick(QtWidgets.QWidget):
-    def __init__(self, steps = 0, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.bannerColor = [255, 255, 255, 200]
         self.brushColor = [10, 10, 10, 200]

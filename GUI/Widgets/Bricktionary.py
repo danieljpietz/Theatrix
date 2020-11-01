@@ -7,7 +7,4 @@ Bricktionary = {
     "Sine": BrickSine,
     "Time": BrickTime
 }
-
 Bricktionary.update({v: k for k, v in Bricktionary.items()})
-
-print(Bricktionary)

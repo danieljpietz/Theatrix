@@ -2,13 +2,13 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QScrollArea, QLabel, QVBoxLayout
 from PyQt5.QtGui import QColor, QLinearGradient
 
 from GUI.Widgets.SearchListEntry import *
-
+from GUI.Widgets.Bricktionary import *
 import numpy as np
 
 
 
 class SearchWindow(QtWidgets.QWidget):
-    def __init__(self, steps = 0, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.bannerColor = [127, 127, 127, 127]
         self.brushColor = [10, 10, 10, 200]
@@ -24,16 +24,19 @@ class SearchWindow(QtWidgets.QWidget):
         self.scroll = QScrollArea()  # Scroll Area which contains the widgets, set as the centralWidget
         self.widget = QWidget()  # Widget that contains the collection of Vertical Box
         self.vbox = QVBoxLayout()  # The Vertical Box that contains the Horizontal Boxes of  labels and buttons
+        self.mainWindow = []
+        self.objects = []
 
-        self.objects = 50 * [None]
-
-        for i in range(1, 50):
-            self.objects[i] = QLabel(str(i))
-            self.objects[i].setStyleSheet("color: rgb(255, 255, 255);")
-            self.vbox.addWidget(self.objects[i])
+        for brick in Bricktionary:
+            if type(brick) != str:
+                break
+            entry = SearchListEntry(brick)
+            self.objects.append (entry)
+            self.vbox.addWidget(entry)
+            entry.setParent(self.widget)
+            entry.show()
 
         self.widget.setLayout(self.vbox)
-
         # Scroll Area Properties
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll.setWidgetResizable(True)

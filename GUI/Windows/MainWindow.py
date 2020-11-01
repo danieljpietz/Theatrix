@@ -29,6 +29,7 @@ class MainWindow(QMainWindow):
         self.searchWindow = SearchWindow()
         self.searchWindow.setParent(self)
         self.searchWindowIsOpen = False
+        self.searchWindow.mainWindow = self
         self.bricks = []
         self.hotMousePosition = []
         self.mouseIsHot = False
@@ -45,7 +46,7 @@ class MainWindow(QMainWindow):
         self.addBrick(Fixture, QPoint(100,100))
         self.addBrick(BrickSine, QPoint(100,100))
         self.addBrick(BrickTime, QPoint(0,0))
-        print(type(self.bricks[0]))
+
         self.selectedBricks = []
         self.boxedRects = []
 
@@ -120,7 +121,8 @@ class MainWindow(QMainWindow):
         self.searchWindowIsOpen = True
         self.searchWindow.move(pos.x() - self.searchWindow.width / 2, pos.y() - self.searchWindow.height/2)
         self.searchWindow.show()
-        pass
+        self.searchWindow.raise_()
+
 
     def hideSearchWindow(self):
         self.searchWindowIsOpen = False
@@ -161,16 +163,15 @@ class MainWindow(QMainWindow):
         painter.setPen(
             QPen(QColor(255,255,255), 2, Qt.SolidLine))
         painter.setRenderHint(QPainter.Antialiasing)
+        cubicCurveFactor = 0.5
         if(self.mouseIsHot):
             mousePos = self.mapFromGlobal(QtGui.QCursor.pos())
             hotPortLoc = self.hotPort.parent.pos() +  self.hotPort.pos() + QPoint(self.hotPort.width/2, self.hotPort.height/2)
             path = QPainterPath()
             path.moveTo(hotPortLoc)
             ##TODO CUBIC PATH
-            if self.hotPort.portType == "Input":
-                path.cubicTo(hotPortLoc - QPoint(100, 0), mousePos + QPoint(100, 0), mousePos)
-            else:
-                path.cubicTo(hotPortLoc + QPoint(100, 0), mousePos - QPoint(100, 0), mousePos)
+            path.cubicTo(hotPortLoc + QPoint((mousePos.x() - hotPortLoc.x()) * cubicCurveFactor, 0), mousePos - QPoint((mousePos.x() - hotPortLoc.x()) * cubicCurveFactor, 0), mousePos)
+
             painter.drawPath(path)
             #painter.drawLine(hotPortLoc.x(), hotPortLoc.y(), mousePos.x(), mousePos.y())
 
@@ -185,7 +186,7 @@ class MainWindow(QMainWindow):
                 path = QPainterPath()
                 path.moveTo(port1Pos)
                 ##TODO CUBIC PATH
-                path.cubicTo(port1Pos - QPoint(100, 0), port2Pos + QPoint(100, 0),port2Pos)
+                path.cubicTo(port1Pos - QPoint((port1Pos.x() - port2Pos.x()) * cubicCurveFactor, 0), port2Pos + QPoint((port1Pos.x() - port2Pos.x()) * cubicCurveFactor, 0),port2Pos)
                 painter.drawPath(path)
 
 

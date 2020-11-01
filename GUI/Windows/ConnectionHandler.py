@@ -10,7 +10,7 @@ from GUI.Windows.SearchWindow import *
 
 
 class ConnectionHandler(QWidget):
-    def __init__(self, steps = 0, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.inputPorts = []
         self.outputPorts = []
@@ -19,7 +19,7 @@ class ConnectionHandler(QWidget):
 
     def setParentWindow(self, window):
         self.window = window
-        self.resize(window.size())
+        self.resize(0,0)
         self.move(0, 0)
 
     def addBrick(self, brick):

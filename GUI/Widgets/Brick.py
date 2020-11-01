@@ -25,6 +25,10 @@ class Brick(QtWidgets.QWidget):
         self.setOutputs([])
         self.addPorts()
 
+    def getConnections(self):
+        self.connections = []
+
+
     def setInputs(self, inputs):
         self.inputs = inputs
         self.inputCount = len(self.inputs)
@@ -127,7 +131,7 @@ class Brick(QtWidgets.QWidget):
                 QPen(QColor(self.selectedColor[0], self.selectedColor[1], self.selectedColor[2], self.selectedColor[3]), 2, Qt.SolidLine))
             painter.drawRect(0, 0, self.width, self.height)
 
-    def mouseReleaeEvent(self, event):
+    def mouseReleaseEvent(self, event):
         if QApplication.keyboardModifiers() != Qt.ShiftModifier:
             self.parent().clearSelected()
         self.parent().addToSelected(self)

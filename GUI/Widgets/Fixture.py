@@ -10,4 +10,3 @@ class Fixture(Brick):
         self.setTitle("Fixture")
         self.setInputs(['Red', 'Green', 'Blue', 'Azimuth', 'Elevation'])
         self.addPorts()
-        print(self.inputPorts)

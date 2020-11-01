@@ -2,64 +2,56 @@
 ## This is the file for the main window
 ## All main window stuff goes here
 ##
-
+from PyQt5 import QtGui
 from PyQt5.QtGui import QPainterPath
 from PyQt5.QtCore import QPoint
 
 from GUI.Windows.SearchWindow import *
 
 
-class ConnectionDrawHandler(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.view.setScene(self.scene)
-        self.view.resize(self.scene.width(), self.scene.height())
+class ConnectionHandler(QWidget):
+    def __init__(self, steps = 0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.inputPorts = []
+        self.outputPorts = []
 
         pass
 
-    def mousePressEvent(self, event):
-        if self.searchWindowIsOpen:
-            self.hideSearchWindow()
+    def setParentWindow(self, window):
+        self.window = window
+        self.resize(window.size())
+        self.move(0, 0)
 
-    def mouseDoubleClickEvent(self, event):
+    def addBrick(self, brick):
+        for port in brick.inputPorts:
+            self.inputPorts.append(port)
+        for port in brick.outputPorts:
+            self.outputPorts.append(port)
 
-        if not self.searchWindowIsOpen:
-            self.launchSearchWindow(event.pos())
-        else:
-            self.searchWindow.move(event.pos().x() - self.searchWindow.width / 2, event.pos().y() - self.searchWindow.height/2)
+    def tryConnect(self, port, mousePos):
+        mousePos = port.mapToGlobal(mousePos) - QPoint(self.window.size().width(), 0)
+        if port.portType == "Input":
+            for portNew in self.outputPorts:
+                portPos = portNew.parent.mapToGlobal(portNew.pos()) - QPoint(self.window.size().width(), 0)
+                if (mousePos.x() >= portPos.x()) and (mousePos.x() <= (portPos.x() + portNew.width)) and (
+                        mousePos.y() >= portPos.y()) and (mousePos.y() <= (portPos.y() + portNew.height)):
+                    if (port.parent != portNew.parent) and (not port.isConnectedTo(portNew)):
+                        if port.isConnected:
+                            port.disconnect(port.connections[0])
+                        port.connections = [portNew]
+                        portNew.connections.append(port)
+                        port.isConnected = True
+                        portNew.isConnected = True
 
-    def launchSearchWindow(self, pos):
-        self.searchWindowIsOpen = True
-        self.searchWindow.move(pos.x() - self.searchWindow.width / 2, pos.y() - self.searchWindow.height/2)
-        self.searchWindow.show()
-        pass
-
-    def hideSearchWindow(self):
-        self.searchWindowIsOpen = False
-        self.searchWindow.hide()
-
-
-    def mouseReleaseEvent(self, event):
-        pass
-
-    def paintEvent(self, event):
-        painter.setPen(
-            QPen(QColor(255,255,255), 2, Qt.SolidLine))
-        painter.setRenderHint(QPainter.Antialiasing)
-        if(self.mouseIsHot):
-            mousePos = self.mapFromGlobal(QtGui.QCursor.pos())
-            hotPortLoc = self.hotPort.parent.pos() +  self.hotPort.pos() + QPoint(self.hotPort.width/2, self.hotPort.height/2)
-            path = QPainterPath()
-            path.moveTo(hotPortLoc)
-            ##TODO CUBIC PATH
-            #path.cubicTo(hotPortLoc.x(),hotPortLoc.y() - 10, 0, mousePos.y() + 10, mousePos.x(), mousePos.y())
-            painter.drawPath(path)
-            painter.drawLine(hotPortLoc.x(), hotPortLoc.y(), mousePos.x(), mousePos.y())
-
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Space:
-            if self.searchWindowIsOpen:
-                self.hideSearchWindow()
-            else:
-                self.launchSearchWindow(self.mapFromGlobal(QtGui.QCursor.pos()))
+        elif port.portType == "Output":
+            for portNew in self.inputPorts:
+                portPos = portNew.parent.mapToGlobal(portNew.pos()) - QPoint(self.window.size().width(), 0)
+                if (mousePos.x() >= portPos.x()) and (mousePos.x() <= (portPos.x() + portNew.width)) and (
+                        mousePos.y() >= portPos.y()) and (mousePos.y() <= (portPos.y() + portNew.height)):
+                    if (port.parent != portNew.parent) and (not port.isConnectedTo(portNew)):
+                        if portNew.isConnected:
+                            portNew.disconnect(portNew.connections[0])
+                        port.connections.append(portNew)
+                        portNew.connections = [port]
+                        port.isConnected = True
+                        portNew.isConnected = True

@@ -64,6 +64,7 @@ class Brick(QtWidgets.QWidget):
             port.setParent(self)
             port.setParentBrick(self)
             port.move(0.5*port.size().width(), self.initHeight/8 + i * 1.5*(port.size().height()))
+            port.portType = "Input"
             port.show()
             inputLabel = QLabel(self.inputs[i])
             inputLabel.setParent(self)
@@ -82,6 +83,7 @@ class Brick(QtWidgets.QWidget):
             port.setParent(self)
             port.setParentBrick(self)
             port.move(self.initWidth - 1.5*port.size().width(), self.initHeight/8 + i * 1.5*(port.size().height()))
+            port.portType = "Output"
             port.show()
             outputLabel = QLabel(self.outputs[i])
             outputLabel.setParent(self)
@@ -125,3 +127,5 @@ class Brick(QtWidgets.QWidget):
 
     def mouseMoveEvent(self,event):
         self.move(self.pos() + event.pos() - self.lastTouch)
+        self.raise_()
+        self.parent().repaint()

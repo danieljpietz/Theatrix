@@ -10,6 +10,9 @@ class Port(QtWidgets.QWidget):
         self.width = 15
         self.resize(self.width,self.height)
         self.isConnected = False;
+        self.portType = None
+        self.connections = []
+        self.value = []
 
     def setParentBrick(self, parent):
         self.parent = parent
@@ -21,23 +24,44 @@ class Port(QtWidgets.QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing);
         painter.setPen(QPen(QColor(penColor[0], penColor[1], penColor[2], penColor[3]),  3, Qt.SolidLine))
-        if self.isConnected == True:
+        if self.isConnected:
             painter.setBrush(QBrush(QColor(penColor[0], penColor[1], penColor[2], penColor[3]), Qt.SolidPattern))
             pass
         painter.drawEllipse(0, 0, self.width,self.height)
 
 
     def mousePressEvent(self,event):
-        self.parent.parentWindow.mouseIsHot = True
-        self.parent.parentWindow.hotPort = self
+        if event.button() == Qt.LeftButton:
+            self.parent.parentWindow.mouseIsHot = True
+            self.parent.parentWindow.hotPort = self
+        elif event.button() == Qt.RightButton:
+            for p in self.connections:
+                self.disconnect(p)
         pass
 
     def mouseReleaseEvent(self,event):
         self.parent.parentWindow.mouseIsHot = False
         self.parent.parentWindow.hotPort = None
+        self.parent.parentWindow.connectionManager.tryConnect(self, event.pos())
+        self.parent.parentWindow.repaint()
         pass
 
     def mouseMoveEvent(self,event):
         self.parent.parentWindow.hotMousePosition = event.pos() + self.pos()
         self.parent.parentWindow.repaint()
         pass
+
+    def disconnect(self, port):
+        self.connections.remove(port)
+        port.connections.remove(self)
+        if len(self.connections) == 0:
+            self.isConnected = False
+        if len(port.connections) == 0:
+            port.isConnected = False
+
+    def isConnectedTo(self, port):
+        for p in self.connections:
+            if p == port:
+                return True
+
+        return False

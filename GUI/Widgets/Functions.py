@@ -12,4 +12,3 @@ class BrickSine(Brick):
         self.setInputs(['x'])
         self.setOutputs(['sin(x)'])
         self.addPorts()
-        print(self.inputPorts)

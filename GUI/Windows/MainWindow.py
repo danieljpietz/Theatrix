@@ -9,6 +9,7 @@ from PyQt5.QtCore import QPoint
 
 
 from GUI.Windows.SearchWindow import *
+from GUI.Windows.ConnectionHandler import *
 from GUI.Widgets.Brick import *
 
 from GUI.Widgets.Fixture import *
@@ -68,30 +69,26 @@ class MainWindow(QMainWindow):
         self.mouseIsHot = False
         self.hotPort = []
 
-        b1 = Fixture()
-        b1.setParentWindow(self)
-        b1.setParent(self)
-        #b1.move(event.pos().x() - b1.width / 2, event.pos().y() - np.sqrt(b1.height))
-        b1.move(400 - b1.width / 2, 400 - np.sqrt(b1.height))
-        b1.show()
+        self.connectionManager = ConnectionHandler()
+        self.connectionManager.setParent(self)
+        self.connectionManager.setParentWindow(self)
+        self.connectionManager.show()
+        self.addBrick(Fixture, QPoint(100,100))
+        self.addBrick(BrickSine, QPoint(100,100))
+        self.addBrick(BrickTime, QPoint(0,0))
 
-        b1 = BrickSine()
-        b1.setParentWindow(self)
-        b1.setParent(self)
-        # b1.move(event.pos().x() - b1.width / 2, event.pos().y() - np.sqrt(b1.height))
-        b1.move(200 - b1.width / 2, 400 - np.sqrt(b1.height))
-        b1.show()
-
-        b1 = BrickTime()
-        b1.setParentWindow(self)
-        b1.setParent(self)
-        # b1.move(event.pos().x() - b1.width / 2, event.pos().y() - np.sqrt(b1.height))
-        b1.move(100 - b1.width / 2, 400 - np.sqrt(b1.height))
-        b1.show()
-
-        self.bricks.append(b1)
 
         pass
+
+    def addBrick(self, brickClass, pos):
+        brick = brickClass()
+        brick.setParentWindow(self)
+        brick.setParent(self)
+        brick.move(pos.x(), pos.y())
+        self.bricks.append(brick)
+        self.connectionManager.addBrick(brick)
+        brick.show()
+
 
     def mousePressEvent(self, event):
         if self.searchWindowIsOpen:
@@ -156,6 +153,20 @@ class MainWindow(QMainWindow):
             painter.drawPath(path)
             painter.drawLine(hotPortLoc.x(), hotPortLoc.y(), mousePos.x(), mousePos.y())
 
+        for input in self.connectionManager.inputPorts:
+            for connection in input.connections:
+                painter.setPen(QPen(QColor(255, 255, 255), 2, Qt.SolidLine))
+                painter.setRenderHint(QPainter.Antialiasing)
+                port1Pos = input.parent.mapToParent(input.pos()) + QPoint(
+                    input.size().width(), input.size().height()) / 2 - 0*QPoint(self.size().width(), 0)
+                port2Pos = connection.parent.mapToParent(connection.pos()) + QPoint(
+                    connection.size().width(), connection.size().height()) / 2 - 0*QPoint(self.size().width(), 0)
+                path = QPainterPath()
+                path.moveTo(port1Pos)
+                ##TODO CUBIC PATH
+                # path.cubicTo(hotPortLoc.x(),hotPortLoc.y() - 10, 0, mousePos.y() + 10, mousePos.x(), mousePos.y())
+                painter.drawPath(path)
+                painter.drawLine(port1Pos, port2Pos)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Space:

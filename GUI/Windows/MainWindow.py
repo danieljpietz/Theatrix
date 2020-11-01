@@ -5,7 +5,7 @@
 
 from PyQt5.QtWidgets import QMainWindow, QGridLayout
 from PyQt5.QtGui import QPainterPath
-from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QPoint, QRect, QSize
 import copy
 
 from GUI.Windows.SearchWindow import *
@@ -16,37 +16,7 @@ from GUI.Widgets.Fixture import *
 from GUI.Widgets.Functions import *
 from GUI.Widgets.Inputs import *
 import numpy as np
-
-
-class GraphicsScene(QtWidgets.QGraphicsScene):
-    def __init__(self, parent=None):
-        super(GraphicsScene, self).__init__(parent)
-        self.setSceneRect(0, 0, 2560,1343)
-
-
-    def drawBackground(self, painter, rect):
-        minorGridSpacing = 25
-        lineLength = 10000
-        lineCount = 100
-        majorGridSpacing = 8
-        minorGridColor = [100, 100, 100, 100]
-        majorGridColor = [0, 0, 0, 255]
-
-        ## Draw grid background
-        painter.setPen(QPen(QColor(minorGridColor[0], minorGridColor[1], minorGridColor[2], minorGridColor[3]),  1, Qt.SolidLine))
-        ##TODO: This is hapazard with the line distances. Probably should be fixed
-        for i in range(0, lineCount):
-            painter.drawLine(minorGridSpacing*i, 0, minorGridSpacing*i, lineLength)
-            painter.drawLine(0, minorGridSpacing*i, lineLength, minorGridSpacing*i)
-
-        painter.setPen(QPen(QColor(majorGridColor[0], majorGridColor[1], majorGridColor[2], majorGridColor[3]),  2, Qt.SolidLine))
-
-        for i in range(0, lineCount):
-            painter.drawLine(majorGridSpacing*minorGridSpacing*i, 0, majorGridSpacing*minorGridSpacing*i, lineLength)
-            painter.drawLine(0, majorGridSpacing*minorGridSpacing*i, lineLength, majorGridSpacing*minorGridSpacing*i)
-
-
-
+from GUI.Widgets.Bricktionary import *
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -54,11 +24,6 @@ class MainWindow(QMainWindow):
         self.layout = QGridLayout()
         self.setStyleSheet("background-color: #1b1c1b;")
         self.setWindowTitle("Theatrix")
-        self.scene = GraphicsScene(self)
-        self.view = QtWidgets.QGraphicsView()
-        self.view.setScene(self.scene)
-        self.view.resize(self.scene.width(), self.scene.height())
-        #self.setCentralWidget(self.view)
         self.showMaximized()
 
         self.searchWindow = SearchWindow()
@@ -71,6 +36,8 @@ class MainWindow(QMainWindow):
 
         self.shiftIsDown = False
 
+        self.shouldDrawSelectionBox = False
+
         self.connectionManager = ConnectionHandler()
         self.connectionManager.setParent(self)
         self.connectionManager.setParentWindow(self)
@@ -78,7 +45,10 @@ class MainWindow(QMainWindow):
         self.addBrick(Fixture, QPoint(100,100))
         self.addBrick(BrickSine, QPoint(100,100))
         self.addBrick(BrickTime, QPoint(0,0))
+        print(type(self.bricks[0]))
         self.selectedBricks = []
+        self.boxedRects = []
+
 
         self.copyBuffer = []
 
@@ -105,6 +75,11 @@ class MainWindow(QMainWindow):
 
         self.selectedBricks = []
 
+    def deselect(self, brick):
+        brick.isSelected = False
+        brick.update()
+        self.selectedBricks.remove(brick)
+
     def isSelected(self, brick):
         for b in self.selectedBricks:
             if b == brick:
@@ -113,8 +88,9 @@ class MainWindow(QMainWindow):
 
     def copySelected(self):
         self.copyBuffer = []
-        for b in self.selectedBricks: pass
-            #self.copyBuffer.append(copy.deepcopy(b))
+        for b in self.selectedBricks:
+            print([Bricktionary[type(b)], b.mapToParent(b.pos())])
+
 
 
     def pasteSelected(self):
@@ -122,12 +98,19 @@ class MainWindow(QMainWindow):
             self.addBrick(type(brick), brick.pos())
 
     def mousePressEvent(self, event):
-        self.clearSelected()
+        self.mousePressLocation = event.pos()
+        self.boxedRects = []
+        if QApplication.keyboardModifiers() != Qt.ShiftModifier:
+            self.clearSelected()
         if self.searchWindowIsOpen:
             self.hideSearchWindow()
 
-    def mouseDoubleClickEvent(self, event):
+    def mouseMoveEvent(self, event):
+        self.mouseDragLocation = event.pos()
+        self.shouldDrawSelectionBox = True
+        self.repaint()
 
+    def mouseDoubleClickEvent(self, event):
         if not self.searchWindowIsOpen:
             self.launchSearchWindow(event.pos())
         else:
@@ -145,6 +128,9 @@ class MainWindow(QMainWindow):
 
 
     def mouseReleaseEvent(self, event):
+        self.shouldDrawSelectionBox = False
+        self.boxedRects = []
+        self.repaint()
         pass
 
     def paintEvent(self, event):
@@ -201,6 +187,27 @@ class MainWindow(QMainWindow):
                 ##TODO CUBIC PATH
                 path.cubicTo(port1Pos - QPoint(100, 0), port2Pos + QPoint(100, 0),port2Pos)
                 painter.drawPath(path)
+
+
+        if self.shouldDrawSelectionBox:
+            painter.setPen(QPen(QColor(255, 255, 255), 1, Qt.DashLine))
+            selectionRect = QRect(np.min([self.mousePressLocation.x(), self.mouseDragLocation.x()]), np.min([self.mousePressLocation.y(), self.mouseDragLocation.y()]),
+                            np.abs(self.mousePressLocation.x() - self.mouseDragLocation.x()),
+                            np.abs(self.mousePressLocation.y() - self.mouseDragLocation.y()))
+            painter.drawRect(selectionRect)
+
+            for brick in self.bricks:
+                P1 = brick.rect().topLeft()
+                brickRect = QRect(brick.mapTo(self, P1), QSize(brick.rect().size().width(), brick.rect().size().height()))
+                if selectionRect.intersects(brickRect):
+                    self.addToSelected(brick)
+                    if brick not in self.boxedRects:
+                        self.boxedRects.append(brick)
+                else:
+                    if brick in self.boxedRects:
+                        self.deselect(brick)
+                        self.boxedRects.remove(brick)
+
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_C:

@@ -6,7 +6,7 @@
 from PyQt5.QtWidgets import QMainWindow, QGridLayout
 from PyQt5.QtGui import QPainterPath
 from PyQt5.QtCore import QPoint
-
+import copy
 
 from GUI.Windows.SearchWindow import *
 from GUI.Windows.ConnectionHandler import *
@@ -69,6 +69,8 @@ class MainWindow(QMainWindow):
         self.mouseIsHot = False
         self.hotPort = []
 
+        self.shiftIsDown = False
+
         self.connectionManager = ConnectionHandler()
         self.connectionManager.setParent(self)
         self.connectionManager.setParentWindow(self)
@@ -76,7 +78,9 @@ class MainWindow(QMainWindow):
         self.addBrick(Fixture, QPoint(100,100))
         self.addBrick(BrickSine, QPoint(100,100))
         self.addBrick(BrickTime, QPoint(0,0))
+        self.selectedBricks = []
 
+        self.copyBuffer = []
 
         pass
 
@@ -89,8 +93,36 @@ class MainWindow(QMainWindow):
         self.connectionManager.addBrick(brick)
         brick.show()
 
+    def addToSelected(self, brick):
+        if not self.isSelected(brick):
+            brick.isSelected = True
+            self.selectedBricks.append(brick)
+
+    def clearSelected(self):
+        for b in self.selectedBricks:
+            b.update()
+            b.isSelected = False
+
+        self.selectedBricks = []
+
+    def isSelected(self, brick):
+        for b in self.selectedBricks:
+            if b == brick:
+                return True
+        return False
+
+    def copySelected(self):
+        self.copyBuffer = []
+        for b in self.selectedBricks: pass
+            #self.copyBuffer.append(copy.deepcopy(b))
+
+
+    def pasteSelected(self):
+        for brick in self.copyBuffer:
+            self.addBrick(type(brick), brick.pos())
 
     def mousePressEvent(self, event):
+        self.clearSelected()
         if self.searchWindowIsOpen:
             self.hideSearchWindow()
 
@@ -149,9 +181,12 @@ class MainWindow(QMainWindow):
             path = QPainterPath()
             path.moveTo(hotPortLoc)
             ##TODO CUBIC PATH
-            #path.cubicTo(hotPortLoc.x(),hotPortLoc.y() - 10, 0, mousePos.y() + 10, mousePos.x(), mousePos.y())
+            if self.hotPort.portType == "Input":
+                path.cubicTo(hotPortLoc - QPoint(100, 0), mousePos + QPoint(100, 0), mousePos)
+            else:
+                path.cubicTo(hotPortLoc + QPoint(100, 0), mousePos - QPoint(100, 0), mousePos)
             painter.drawPath(path)
-            painter.drawLine(hotPortLoc.x(), hotPortLoc.y(), mousePos.x(), mousePos.y())
+            #painter.drawLine(hotPortLoc.x(), hotPortLoc.y(), mousePos.x(), mousePos.y())
 
         for input in self.connectionManager.inputPorts:
             for connection in input.connections:
@@ -164,13 +199,23 @@ class MainWindow(QMainWindow):
                 path = QPainterPath()
                 path.moveTo(port1Pos)
                 ##TODO CUBIC PATH
-                # path.cubicTo(hotPortLoc.x(),hotPortLoc.y() - 10, 0, mousePos.y() + 10, mousePos.x(), mousePos.y())
+                path.cubicTo(port1Pos - QPoint(100, 0), port2Pos + QPoint(100, 0),port2Pos)
                 painter.drawPath(path)
-                painter.drawLine(port1Pos, port2Pos)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Space:
+        if event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_C:
+            self.copySelected()
+        elif event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_A:
+            for b in self.bricks:
+                self.addToSelected(b)
+                b.update()
+        elif event.key() == Qt.Key_Space:
             if self.searchWindowIsOpen:
                 self.hideSearchWindow()
             else:
                 self.launchSearchWindow(self.mapFromGlobal(QtGui.QCursor.pos()))
+        elif event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_V:
+            self.pasteSelected()
+
+
+

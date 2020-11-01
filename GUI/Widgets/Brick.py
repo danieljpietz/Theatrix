@@ -1,5 +1,5 @@
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLabel, QApplication
 from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QLinearGradient
 from PyQt5.QtCore import Qt
 
@@ -14,10 +14,12 @@ class Brick(QtWidgets.QWidget):
         self.bannerColor = [255, 255, 255, 200]
         self.brushColor = [10, 10, 10, 200]
         self.penColor = [200, 200, 200, 200]
+        self.selectedColor = [255, 180, 3, 200]
         self.initWidth = 400
         self.initHeight = 400
         self.width = self.initWidth
         self.height = self.initHeight
+        self.isSelected = False
         self.setupTitle("Brick")
         self.setInputs([])
         self.setOutputs([])
@@ -49,8 +51,6 @@ class Brick(QtWidgets.QWidget):
     def setTitle(self, title):
         self.titleLabel.setText(title)
         self.titleLabel.adjustSize()
-
-
 
     def setParentWindow(self, window):
         self.parentWindow = window
@@ -119,13 +119,32 @@ class Brick(QtWidgets.QWidget):
         painter.setBrush(QBrush(gradient))
         painter.setPen(QPen(QColor(self.penColor[0], self.penColor[1], self.penColor[2], 0),  0, Qt.SolidLine))
         painter.drawRect(2, 2, self.width - 4, 2*np.sqrt(self.height))
+        if self.isSelected:
+            painter.setBrush(
+                QBrush(QColor(0, 0, 0, 0),
+                       Qt.SolidPattern))
+            painter.setPen(
+                QPen(QColor(self.selectedColor[0], self.selectedColor[1], self.selectedColor[2], self.selectedColor[3]), 2, Qt.SolidLine))
+            painter.drawRect(0, 0, self.width, self.height)
+
+    def mouseReleaeEvent(self, event):
+        if QApplication.keyboardModifiers() != Qt.ShiftModifier:
+            self.parent().clearSelected()
+        self.parent().addToSelected(self)
 
     def mousePressEvent(self,event):
+        self.update()
         self.lastTouch = event.pos()
         self.position = self.pos()
+        if QApplication.keyboardModifiers() != Qt.ShiftModifier and len(self.parent().selectedBricks) == 1:
+            self.parent().clearSelected()
+        self.parent().addToSelected(self)
         pass
 
     def mouseMoveEvent(self,event):
-        self.move(self.pos() + event.pos() - self.lastTouch)
-        self.raise_()
+        for brick in self.parent().selectedBricks:
+            brick.move(brick.pos() + event.pos() - self.lastTouch)
+            brick.raise_()
         self.parent().repaint()
+
+

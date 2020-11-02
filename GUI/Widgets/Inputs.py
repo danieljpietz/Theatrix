@@ -1,4 +1,5 @@
 from GUI.Widgets.Brick import *
+import time as tm
 
 class BrickTime(Brick):
     def __init__(self, *args, **kwargs):
@@ -10,4 +11,6 @@ class BrickTime(Brick):
         self.setTitle("Time")
         self.setOutputs(['Time'])
         self.addPorts()
-        print(self.inputPorts)
+
+    def eval(self):
+        self.outputPorts[0].value = tm.time()

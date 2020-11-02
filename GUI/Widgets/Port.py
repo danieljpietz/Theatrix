@@ -12,10 +12,29 @@ class Port(QtWidgets.QWidget):
         self.isConnected = False;
         self.portType = None
         self.connections = []
-        self.value = []
+        self.value = None
 
     def setParentBrick(self, parent):
         self.parent = parent
+
+    def getValue(self):
+        if self.parent.updateID == self.parent.parentWindow.updateID:
+            return self.value
+        else:
+            self.updateValue()
+            return self.value
+    def updateValue(self):
+        if self.portType == "Input":
+            if len(self.connections) == 0:
+                self.value = 0
+                return
+            else:
+                self.value = self.connections[0].getValue()
+                return
+        else:
+            self.parent.eval()
+
+
 
     def paintEvent(self, event):
 

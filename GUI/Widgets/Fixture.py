@@ -10,3 +10,9 @@ class Fixture(Brick):
         self.setTitle("Fixture")
         self.setInputs(['Red', 'Green', 'Blue', 'Azimuth', 'Elevation'])
         self.addPorts()
+        self.isOutput = True
+
+    def eval(self):
+        for port in self.inputPorts:
+            if port.isConnected:
+                print(port.getValue())

@@ -4,19 +4,10 @@
 ##
 
 from PyQt5.QtWidgets import QMainWindow, QGridLayout
-from PyQt5.QtGui import QPainterPath
-from PyQt5.QtCore import QPoint, QRect, QSize
-import copy
 
-from GUI.Windows.SearchWindow import *
-from GUI.Windows.ConnectionHandler import *
-from GUI.Widgets.Brick import *
-
-from GUI.Widgets.Fixture import *
-from GUI.Widgets.Functions import *
-from GUI.Widgets.Inputs import *
-import numpy as np
 from GUI.Widgets.Bricktionary import *
+from GUI.Windows.ConnectionHandler import *
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -43,18 +34,24 @@ class MainWindow(QMainWindow):
         self.connectionManager.setParent(self)
         self.connectionManager.setParentWindow(self)
         self.connectionManager.show()
-        self.addBrick(Fixture, QPoint(100,100))
-        self.addBrick(BrickSine, QPoint(100,100))
-        self.addBrick(BrickTime, QPoint(0,0))
 
         self.selectedBricks = []
         self.boxedRects = []
 
-
+        self.updateID = 0
+        self.updateManager = None
+        self.outputBricks = []
         self.copyBuffer = []
+
+        self.addBrick(Fixture, QPoint(100, 100))
+        self.addBrick(BrickSine, QPoint(100, 100))
+        self.addBrick(BrickTime, QPoint(0, 0))
 
         pass
 
+    def updateDMX(self):
+        for brick in self.outputBricks:
+            brick.eval()
     def addBrick(self, brickClass, pos):
         brick = brickClass()
         brick.setParentWindow(self)
@@ -62,6 +59,8 @@ class MainWindow(QMainWindow):
         brick.move(pos.x(), pos.y())
         self.bricks.append(brick)
         self.connectionManager.addBrick(brick)
+        if brick.isOutput:
+            self.outputBricks.append(brick)
         brick.show()
 
     def addToSelected(self, brick):
@@ -91,8 +90,6 @@ class MainWindow(QMainWindow):
         self.copyBuffer = []
         for b in self.selectedBricks:
             print([Bricktionary[type(b)], b.mapToParent(b.pos())])
-
-
 
     def pasteSelected(self):
         for brick in self.copyBuffer:

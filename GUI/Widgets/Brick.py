@@ -24,6 +24,11 @@ class Brick(QtWidgets.QWidget):
         self.setInputs([])
         self.setOutputs([])
         self.addPorts()
+        self.updateID = None
+        self.isOutput = False
+
+    def eval(self):
+        pass
 
     def getConnections(self):
         self.connections = []

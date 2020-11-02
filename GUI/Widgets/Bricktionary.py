@@ -2,9 +2,18 @@ from GUI.Widgets.Functions import *
 from GUI.Widgets.Inputs import *
 from GUI.Widgets.Fixture import *
 
+
+
 Bricktionary = {
     "Fixture": Fixture,
     "Sine": BrickSine,
+    "Cosine": BrickCos,
+    "Max": BrickMax,
+    "Min": BrickMin,
     "Time": BrickTime
 }
-Bricktionary.update({v: k for k, v in Bricktionary.items()})
+
+def addToBricktionary(brickClass, name):
+    Bricktionary[name] = brickClass
+
+#Bricktionary.update({v: k for k, v in Bricktionary.items()})

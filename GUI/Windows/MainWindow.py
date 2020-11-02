@@ -44,9 +44,8 @@ class MainWindow(QMainWindow):
         self.outputBricks = []
         self.copyBuffer = []
 
-        self.addBrick(Fixture, QPoint(100, 100))
-        self.addBrick(BrickSine, QPoint(100, 100))
-        self.addBrick(BrickTime, QPoint(0, 0))
+        self.addBrick(Fixture, QPoint(400, 400))
+        self.addBrick(BrickTime, QPoint(200, 200))
 
         pass
 

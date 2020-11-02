@@ -118,7 +118,29 @@ class BrickConst(Brick):
         self.addPorts()
 
     def eval(self):
+        if len(self.textbox.text()) == 0:
+            self.outputPorts[0].value = 0
         try:
             self.outputPorts[0].value = float(self.textbox.text())
         except:
             self.outputPorts[0].value = 0
+
+
+class BrickMod(Brick):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bannerColor = [255, 0, 127, 255]
+        self.penColor = [0, 0, 0, 0]
+        self.initWidth = 140
+        self.width = 140
+        self.setTitle("mod(x,y)")
+        self.setInputs(['x', 'y'])
+        self.setOutputs(['mod(x,y)'])
+        self.addPorts()
+
+    def eval(self):
+        port1Val =  self.inputPorts[1].getValue()
+        if port1Val == 0:
+            self.outputPorts[0].value = 0
+            return
+        self.outputPorts[0].value = np.mod(self.inputPorts[0].getValue(), self.inputPorts[1].getValue())

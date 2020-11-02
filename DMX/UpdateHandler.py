@@ -6,7 +6,7 @@ import pyenttec as dmx
 
 class UpdateHandler(object):
     def __init__(self):
-        self.refreshRate = 40
+        self.refreshRate = 80
         self.window = None
         self.shouldUpdate = True
         self.updateThread = threading.Thread(target=self.update)

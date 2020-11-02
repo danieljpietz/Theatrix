@@ -1,10 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QLineEdit, QScrollArea, QLabel, QVBoxLayout
-from PyQt5.QtGui import QColor, QLinearGradient
-
-from GUI.Widgets.SearchListEntry import *
-from GUI.Widgets.Bricktionary import *
 import numpy as np
+from PyQt5.QtWidgets import QWidget, QScrollArea, QVBoxLayout
 
+from GUI.Widgets.Bricktionary import *
+from GUI.Widgets.SearchListEntry import *
 
 
 class SearchWindow(QtWidgets.QWidget):
@@ -31,7 +29,7 @@ class SearchWindow(QtWidgets.QWidget):
             if type(brick) != str:
                 break
             entry = SearchListEntry(brick)
-            self.objects.append (entry)
+            self.objects.append(entry)
             self.vbox.addWidget(entry)
             entry.setParent(self.widget)
             entry.show()
@@ -46,18 +44,19 @@ class SearchWindow(QtWidgets.QWidget):
         self.scroll.resize(self.width - 40, self.height - 70 - 20)
         self.scroll.show()
 
-
-
     def paintEvent(self, event):
         penColor = [200, 200, 200, 200]
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing);
-        painter.setPen(QPen(QColor(penColor[0], penColor[1], penColor[2], penColor[3]),  2, Qt.SolidLine))
+        painter.setPen(QPen(QColor(penColor[0], penColor[1], penColor[2], penColor[3]), 2, Qt.SolidLine))
         gradient = QLinearGradient(0, 0, 0, self.height)
-        gradient.setColorAt(0.0, QColor(self.bannerColor[0], self.bannerColor[1], self.bannerColor[2], self.bannerColor[3]))
-        gradient.setColorAt(0.15, QColor(self.brushColor[0], self.brushColor[1], self.brushColor[2], self.brushColor[3]))
-        painter.setBrush(QBrush(QColor(self.brushColor[0], self.brushColor[1], self.brushColor[2], self.brushColor[3]), Qt.SolidPattern))
-        #painter.setBrush(QBrush(gradient))
+        gradient.setColorAt(0.0,
+                            QColor(self.bannerColor[0], self.bannerColor[1], self.bannerColor[2], self.bannerColor[3]))
+        gradient.setColorAt(0.15,
+                            QColor(self.brushColor[0], self.brushColor[1], self.brushColor[2], self.brushColor[3]))
+        painter.setBrush(QBrush(QColor(self.brushColor[0], self.brushColor[1], self.brushColor[2], self.brushColor[3]),
+                                Qt.SolidPattern))
+        # painter.setBrush(QBrush(gradient))
         painter.drawRoundedRect(0, 0, self.width, self.height, np.sqrt(self.width), np.sqrt(self.height))
 
     def mousePressEvent(self, event):

@@ -1,13 +1,12 @@
-from PyQt5 import QtGui, QtWidgets
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QLabel, QApplication
-from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QLinearGradient
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import QPoint
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QPoint, QRect, QSize
+from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QLinearGradient
+from PyQt5.QtWidgets import QLabel
 
 from GUI.Widgets.Bricktionary import Bricktionary
 
-import numpy as np
 
 class SearchListEntry(QtWidgets.QWidget):
     """
@@ -39,9 +38,8 @@ class SearchListEntry(QtWidgets.QWidget):
 
     def mouseDoubleClickEvent(self, event):
         window = self.parent().parent().parent().parent().parent()
-        window.addBrick(Bricktionary[self.itemName], self.mapTo(window, QPoint(0,0)))
+        window.addBrick(Bricktionary[self.itemName], self.mapTo(window, QPoint(0, 0)))
         window.hideSearchWindow()
-
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -55,8 +53,10 @@ class SearchListEntry(QtWidgets.QWidget):
                             QColor(self.brushColor[0], self.brushColor[1], self.brushColor[2], self.brushColor[3]))
         painter.setBrush(QBrush(QColor(self.brushColor[0], self.brushColor[1], self.brushColor[2], self.brushColor[3]),
                                 Qt.SolidPattern))
-        painter.setPen(QPen(QColor(self.penColor[0], self.penColor[1], self.penColor[2], self.penColor[3]),  2, Qt.SolidLine))
+        painter.setPen(
+            QPen(QColor(self.penColor[0], self.penColor[1], self.penColor[2], self.penColor[3]), 2, Qt.SolidLine))
         painter.drawRect(0, 0, self.width, self.height)
+
 
 """
 class SearchListEntry(QtWidgets.QWidget):
@@ -79,4 +79,3 @@ class SearchListEntry(QtWidgets.QWidget):
         painter.setBrush(QBrush(Qt.yellow, Qt.SolidPattern))
         painter.drawRect(0, 0, self.width, self.height)
 """
-

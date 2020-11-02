@@ -2,9 +2,6 @@
 ## This is the file for the main window
 ## All main window stuff goes here
 ##
-from PyQt5 import QtGui
-from PyQt5.QtGui import QPainterPath
-from PyQt5.QtCore import QPoint
 
 from GUI.Windows.SearchWindow import *
 
@@ -19,7 +16,7 @@ class ConnectionHandler(QWidget):
 
     def setParentWindow(self, window):
         self.window = window
-        self.resize(0,0)
+        self.resize(0, 0)
         self.move(0, 0)
 
     def addBrick(self, brick):

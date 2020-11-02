@@ -2,10 +2,11 @@
 ## This is the file for the main window
 ## All main window stuff goes here
 ##
-
+from PyQt5.QtCore import QRect, QSize
+from PyQt5.QtGui import QPainterPath
 from PyQt5.QtWidgets import QMainWindow, QGridLayout
 
-from GUI.Widgets.Bricktionary import *
+
 from GUI.Windows.ConnectionHandler import *
 
 
@@ -52,6 +53,7 @@ class MainWindow(QMainWindow):
     def updateDMX(self):
         for brick in self.outputBricks:
             brick.eval()
+
     def addBrick(self, brickClass, pos):
         brick = brickClass()
         brick.setParentWindow(self)
@@ -95,6 +97,12 @@ class MainWindow(QMainWindow):
         for brick in self.copyBuffer:
             self.addBrick(type(brick), brick.pos())
 
+    def deleteSelected(self):
+        for brick in self.selectedBricks:
+            for port in brick.inputPorts + brick.outputPorts:
+                port.disconnectAll()
+        self.update()
+
     def mousePressEvent(self, event):
         self.mousePressLocation = event.pos()
         self.boxedRects = []
@@ -112,19 +120,18 @@ class MainWindow(QMainWindow):
         if not self.searchWindowIsOpen:
             self.launchSearchWindow(event.pos())
         else:
-            self.searchWindow.move(event.pos().x() - self.searchWindow.width / 2, event.pos().y() - self.searchWindow.height/2)
+            self.searchWindow.move(event.pos().x() - self.searchWindow.width / 2,
+                                   event.pos().y() - self.searchWindow.height / 2)
 
     def launchSearchWindow(self, pos):
         self.searchWindowIsOpen = True
-        self.searchWindow.move(pos.x() - self.searchWindow.width / 2, pos.y() - self.searchWindow.height/2)
+        self.searchWindow.move(pos.x() - self.searchWindow.width / 2, pos.y() - self.searchWindow.height / 2)
         self.searchWindow.show()
         self.searchWindow.raise_()
-
 
     def hideSearchWindow(self):
         self.searchWindowIsOpen = False
         self.searchWindow.hide()
-
 
     def mouseReleaseEvent(self, event):
         self.shouldDrawSelectionBox = False
@@ -143,60 +150,66 @@ class MainWindow(QMainWindow):
 
         ## Draw grid background
         painter = QPainter(self)
-        painter.setPen(QPen(QColor(minorGridColor[0], minorGridColor[1], minorGridColor[2], minorGridColor[3]),  1, Qt.SolidLine))
+        painter.setPen(
+            QPen(QColor(minorGridColor[0], minorGridColor[1], minorGridColor[2], minorGridColor[3]), 1, Qt.SolidLine))
         ##TODO: This is hapazard with the line distances. Probably should be fixed
         for i in range(0, lineCount):
-            painter.drawLine(minorGridSpacing*i, 0, minorGridSpacing*i, lineLength)
-            painter.drawLine(0, minorGridSpacing*i, lineLength, minorGridSpacing*i)
+            painter.drawLine(minorGridSpacing * i, 0, minorGridSpacing * i, lineLength)
+            painter.drawLine(0, minorGridSpacing * i, lineLength, minorGridSpacing * i)
 
         painter.setPen(
             QPen(QColor(majorGridColor[0], majorGridColor[1], majorGridColor[2], majorGridColor[3]), 2, Qt.SolidLine))
 
         for i in range(0, lineCount):
-            painter.drawLine(majorGridSpacing*minorGridSpacing*i, 0, majorGridSpacing*minorGridSpacing*i, lineLength)
-            painter.drawLine(0, majorGridSpacing*minorGridSpacing*i, lineLength, majorGridSpacing*minorGridSpacing*i)
-
+            painter.drawLine(majorGridSpacing * minorGridSpacing * i, 0, majorGridSpacing * minorGridSpacing * i,
+                             lineLength)
+            painter.drawLine(0, majorGridSpacing * minorGridSpacing * i, lineLength,
+                             majorGridSpacing * minorGridSpacing * i)
 
         painter.setPen(
-            QPen(QColor(255,255,255), 2, Qt.SolidLine))
+            QPen(QColor(255, 255, 255), 2, Qt.SolidLine))
         painter.setRenderHint(QPainter.Antialiasing)
         cubicCurveFactor = 0.5
-        if(self.mouseIsHot):
+        if (self.mouseIsHot):
             mousePos = self.mapFromGlobal(QtGui.QCursor.pos())
-            hotPortLoc = self.hotPort.parent.pos() +  self.hotPort.pos() + QPoint(self.hotPort.width/2, self.hotPort.height/2)
+            hotPortLoc = self.hotPort.parent.pos() + self.hotPort.pos() + QPoint(self.hotPort.width / 2,
+                                                                                 self.hotPort.height / 2)
             path = QPainterPath()
             path.moveTo(hotPortLoc)
             ##TODO CUBIC PATH
-            path.cubicTo(hotPortLoc + QPoint((mousePos.x() - hotPortLoc.x()) * cubicCurveFactor, 0), mousePos - QPoint((mousePos.x() - hotPortLoc.x()) * cubicCurveFactor, 0), mousePos)
+            path.cubicTo(hotPortLoc + QPoint((mousePos.x() - hotPortLoc.x()) * cubicCurveFactor, 0),
+                         mousePos - QPoint((mousePos.x() - hotPortLoc.x()) * cubicCurveFactor, 0), mousePos)
 
             painter.drawPath(path)
-            #painter.drawLine(hotPortLoc.x(), hotPortLoc.y(), mousePos.x(), mousePos.y())
+            # painter.drawLine(hotPortLoc.x(), hotPortLoc.y(), mousePos.x(), mousePos.y())
 
         for input in self.connectionManager.inputPorts:
             for connection in input.connections:
                 painter.setPen(QPen(QColor(255, 255, 255), 2, Qt.SolidLine))
                 painter.setRenderHint(QPainter.Antialiasing)
                 port1Pos = input.parent.mapToParent(input.pos()) + QPoint(
-                    input.size().width(), input.size().height()) / 2 - 0*QPoint(self.size().width(), 0)
+                    input.size().width(), input.size().height()) / 2 - 0 * QPoint(self.size().width(), 0)
                 port2Pos = connection.parent.mapToParent(connection.pos()) + QPoint(
-                    connection.size().width(), connection.size().height()) / 2 - 0*QPoint(self.size().width(), 0)
+                    connection.size().width(), connection.size().height()) / 2 - 0 * QPoint(self.size().width(), 0)
                 path = QPainterPath()
                 path.moveTo(port1Pos)
                 ##TODO CUBIC PATH
-                path.cubicTo(port1Pos - QPoint((port1Pos.x() - port2Pos.x()) * cubicCurveFactor, 0), port2Pos + QPoint((port1Pos.x() - port2Pos.x()) * cubicCurveFactor, 0),port2Pos)
+                path.cubicTo(port1Pos - QPoint((port1Pos.x() - port2Pos.x()) * cubicCurveFactor, 0),
+                             port2Pos + QPoint((port1Pos.x() - port2Pos.x()) * cubicCurveFactor, 0), port2Pos)
                 painter.drawPath(path)
-
 
         if self.shouldDrawSelectionBox:
             painter.setPen(QPen(QColor(255, 255, 255), 1, Qt.DashLine))
-            selectionRect = QRect(np.min([self.mousePressLocation.x(), self.mouseDragLocation.x()]), np.min([self.mousePressLocation.y(), self.mouseDragLocation.y()]),
-                            np.abs(self.mousePressLocation.x() - self.mouseDragLocation.x()),
-                            np.abs(self.mousePressLocation.y() - self.mouseDragLocation.y()))
+            selectionRect = QRect(np.min([self.mousePressLocation.x(), self.mouseDragLocation.x()]),
+                                  np.min([self.mousePressLocation.y(), self.mouseDragLocation.y()]),
+                                  np.abs(self.mousePressLocation.x() - self.mouseDragLocation.x()),
+                                  np.abs(self.mousePressLocation.y() - self.mouseDragLocation.y()))
             painter.drawRect(selectionRect)
 
             for brick in self.bricks:
                 P1 = brick.rect().topLeft()
-                brickRect = QRect(brick.mapTo(self, P1), QSize(brick.rect().size().width(), brick.rect().size().height()))
+                brickRect = QRect(brick.mapTo(self, P1),
+                                  QSize(brick.rect().size().width(), brick.rect().size().height()))
                 if selectionRect.intersects(brickRect):
                     self.addToSelected(brick)
                     if brick not in self.boxedRects:
@@ -205,7 +218,6 @@ class MainWindow(QMainWindow):
                     if brick in self.boxedRects:
                         self.deselect(brick)
                         self.boxedRects.remove(brick)
-
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_C:
@@ -221,6 +233,6 @@ class MainWindow(QMainWindow):
                 self.launchSearchWindow(self.mapFromGlobal(QtGui.QCursor.pos()))
         elif event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_V:
             self.pasteSelected()
-
-
-
+        elif event.key() == Qt.Key_Delete or event.key() == Qt.Key_Backspace:
+            print("Del")
+            self.deleteSelected()

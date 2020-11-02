@@ -7,6 +7,7 @@ Bricktionary = {
     "Value": BrickConst,
     "Multiply": BrickMult,
     "Add": BrickAdd,
+    "Mod": BrickMod,
     "Sine": BrickSine,
     "Cosine": BrickCos,
     "Max": BrickMax,

@@ -18,6 +18,8 @@ class Port(QtWidgets.QWidget):
         self.parent = parent
 
     def getValue(self):
+        if not self.isConnected:
+            return 0
         if self.parent.updateID == self.parent.parentWindow.updateID:
             return self.value
         else:

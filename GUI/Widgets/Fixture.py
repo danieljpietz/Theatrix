@@ -10,7 +10,7 @@ class Fixture(Brick):
         self.penColor = [0, 0, 0, 0]
         self.width = 100
         self.setTitle("Fixture")
-        self.setInputs(['Pan', 'Tilt', 'Red', 'Green', 'Blue'])
+        self.setInputs(['Pan', 'Tilt', 'Red', 'Green', 'Blue', 'Dimmer'])
         self.addPorts()
         self.isOutput = True
 
@@ -18,7 +18,7 @@ class Fixture(Brick):
         # Evaluate Pan
         if self.inputPorts[0].isConnected:
             portVal = self.inputPorts[0].getValue()
-            portVal = portVal * (portVal > 0) * (portVal < 1) + (portVal > 1)
+            portVal = portVal * (portVal > 0) * (portVal <= 1) + (portVal > 1)
             panHigh = np.floor(255 * portVal)
             panLow = np.floor(255 * (255 * portVal - panHigh))
             self.parentWindow.updateManager.port.dmx_frame[0] = int(panHigh)
@@ -29,29 +29,32 @@ class Fixture(Brick):
 
         if self.inputPorts[1].isConnected:
             portVal = self.inputPorts[1].getValue()
-            portVal = portVal * (portVal > 0) * (portVal < 1) + (portVal > 1)
+            portVal = portVal * (portVal > 0) * (portVal <= 1) + (portVal > 1)
             tiltHigh = np.floor(255 * portVal)
             tiltLow = np.floor(255 * (255 * portVal - tiltHigh))
             self.parentWindow.updateManager.port.dmx_frame[2] = int(tiltHigh)
-            self.parentWindow.updateManager.port.dmx_frame[3] = int(panLow)
+            self.parentWindow.updateManager.port.dmx_frame[3] = int(tiltLow)
         else:
             self.parentWindow.updateManager.port.dmx_frame[2] = 0
             self.parentWindow.updateManager.port.dmx_frame[3] = 0
-        self.parentWindow.updateManager.port.dmx_frame[5] = 255
-        self.parentWindow.updateManager.port.dmx_frame[6] = 255
-        self.parentWindow.updateManager.port.dmx_frame[7] = 21
+        self.parentWindow.updateManager.port.dmx_frame[7] = 24
         redVal = 0
         blueVal = 0
         greenVal = 0
+        dimmerVal = 0
         if self.inputPorts[2].isConnected:
             redVal = max([self.inputPorts[2].getValue(), 0])
-            redVal = redVal * (redVal < 1) + (redVal > 1)
+            redVal = redVal * (redVal <= 1) + (redVal > 1)
         if self.inputPorts[3].isConnected:
-            blueVal = max([self.inputPorts[3].getValue(), 0])
-            blueVal = blueVal * (blueVal < 1) + (blueVal > 1)
-        if self.inputPorts[4].isConnected:
             greenVal = max([self.inputPorts[4].getValue(), 0])
-            greenVal = greenVal * (greenVal < 1) + (greenVal > 1)
+            greenVal = greenVal * (greenVal <= 1) + (greenVal > 1)
+        if self.inputPorts[4].isConnected:
+            blueVal = max([self.inputPorts[3].getValue(), 0])
+            blueVal = blueVal * (blueVal <= 1) + (blueVal > 1)
+        if self.inputPorts[5].isConnected:
+            dimmerVal = max([self.inputPorts[5].getValue(), 0])
+            dimmerVal = dimmerVal * (dimmerVal <= 1) + (dimmerVal > 1)
+
 
         whiteVal = min([redVal, blueVal, greenVal])
         redVal = redVal - whiteVal
@@ -81,6 +84,12 @@ class Fixture(Brick):
         portLow = np.floor(255 * (255 * portVal - portHigh))
         self.parentWindow.updateManager.port.dmx_frame[14] = int(portHigh)
         self.parentWindow.updateManager.port.dmx_frame[15] = int(portLow)
+
+        portVal = dimmerVal
+        portHigh = np.floor(255 * portVal)
+        portLow = np.floor(255 * (255 * portVal - portHigh))
+        self.parentWindow.updateManager.port.dmx_frame[5] = int(portHigh)
+        self.parentWindow.updateManager.port.dmx_frame[6] = int(portLow)
 
         """
         for port in self.inputPorts:

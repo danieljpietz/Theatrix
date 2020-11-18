@@ -15,8 +15,9 @@ Bricktionary = {
     "Time": BrickTime
 }
 
+Bricktionary.update({v: k for k, v in Bricktionary.items()})
 
 def addToBricktionary(brickClass, name):
     Bricktionary[name] = brickClass
 
-# Bricktionary.update({v: k for k, v in Bricktionary.items()})
+

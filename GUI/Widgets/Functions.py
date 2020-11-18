@@ -144,3 +144,25 @@ class BrickMod(Brick):
             self.outputPorts[0].value = 0
             return
         self.outputPorts[0].value = np.mod(self.inputPorts[0].getValue(), self.inputPorts[1].getValue())
+
+
+class BrickMux(Brick):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bannerColor = [255, 0, 127, 255]
+        self.penColor = [0, 0, 0, 0]
+        self.initWidth = 140
+        self.width = 140
+        self.setTitle("MUX")
+        self.setInputs(['V', 'n'])
+        self.setOutputs(['0', '1', '2', '3', '4', '5', '6', '7', '8'])
+        self.addPorts()
+
+    def eval(self):
+        port1Val =  self.inputPorts[1].getValue()
+        if port1Val == 0:
+            self.outputPorts[0].value = 0
+            return
+        self.outputPorts[0].value = np.mod(self.inputPorts[0].getValue(), self.inputPorts[1].getValue())
+        for port in self.outputPorts:
+            port.value = 0

@@ -15,10 +15,12 @@ class SearchWindow(QtWidgets.QWidget):
         self.width = self.initWidth
         self.height = self.initHeight
         self.resize(self.width, self.height)
+        """
         self.textbox = QLineEdit(self)
         self.textbox.move(20, 20)
         self.textbox.resize(self.width - 40, 30)
-        self.textbox.setStyleSheet("color: rgb(255, 255, 255);")
+        self.textbox.setStyleSheet("color: rgb(255, 255, 255);") 
+        """
         self.scroll = QScrollArea()  # Scroll Area which contains the widgets, set as the centralWidget
         self.widget = QWidget()  # Widget that contains the collection of Vertical Box
         self.vbox = QVBoxLayout()  # The Vertical Box that contains the Horizontal Boxes of  labels and buttons
@@ -40,8 +42,8 @@ class SearchWindow(QtWidgets.QWidget):
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.widget)
         self.scroll.setParent(self)
-        self.scroll.move(20, 70)
-        self.scroll.resize(self.width - 40, self.height - 70 - 20)
+        self.scroll.move(20, 20)
+        self.scroll.resize(self.width - 40, self.height - 40)
         self.scroll.show()
 
     def paintEvent(self, event):

@@ -14,6 +14,7 @@ class Brick(QtWidgets.QWidget):
         self.brushColor = [10, 10, 10, 200]
         self.penColor = [200, 200, 200, 200]
         self.selectedColor = [255, 180, 3, 200]
+        self.brickID = 0
         self.initWidth = 400
         self.initHeight = 400
         self.width = self.initWidth
@@ -28,6 +29,9 @@ class Brick(QtWidgets.QWidget):
 
     def eval(self):
         pass
+
+    def kill(self):
+        self.close()
 
     def getConnections(self):
         self.connections = []
@@ -64,8 +68,12 @@ class Brick(QtWidgets.QWidget):
         # TODO: Autosizing
         maxInputSize = 0;
         maxOutputSize = 0;
+        portID = 0
+        self.inputPorts = []
         for i in range(0, self.inputCount):
             port = Port()
+            port.portID = portID
+            portID = portID + 1
             port.setParent(self)
             port.setParentBrick(self)
             port.move(0.5 * port.size().width(), self.initHeight / 8 + i * 1.5 * (port.size().height()))
@@ -80,11 +88,12 @@ class Brick(QtWidgets.QWidget):
             if inputLabel.width() > maxInputSize:
                 maxInputSize = inputLabel.width()
                 pass
-
             pass
-
+        self.outputPorts = []
         for i in range(0, self.outputCount):
             port = Port()
+            port.portID = portID
+            portID = portID + 1
             port.setParent(self)
             port.setParentBrick(self)
             port.move(self.initWidth - 1.5 * port.size().width(),
@@ -102,12 +111,19 @@ class Brick(QtWidgets.QWidget):
                 maxOutputSize = outputLabel.width()
                 pass
             pass
+        self.ports = []
+        for p in self.inputPorts:
+            self.ports.append(p)
+        for p in self.outputPorts:
+            self.ports.append(p)
+
         if (self.inputCount or self.outputCount) == 0:
             self.height = self.initHeight / 6
         else:
             self.height = self.initHeight / 6 + np.max([self.inputCount, self.outputCount]) * 1.5 * (
                 port.size().height())
         self.resize(self.width, self.height)
+
 
     def paintEvent(self, event):
 

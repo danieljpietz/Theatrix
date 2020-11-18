@@ -15,4 +15,4 @@ class BrickTime(Brick):
         self.addPorts()
 
     def eval(self):
-        self.outputPorts[0].value = tm.time()
+        self.outputPorts[0].value = tm.time() - self.parentWindow.timeMod

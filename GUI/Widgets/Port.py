@@ -10,6 +10,7 @@ class Port(QtWidgets.QWidget):
         self.width = 15
         self.resize(self.width, self.height)
         self.isConnected = False;
+        self.portID = 0
         self.portType = None
         self.connections = []
         self.value = None

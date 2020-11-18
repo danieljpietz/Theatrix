@@ -25,6 +25,17 @@ class ConnectionHandler(QWidget):
         for port in brick.outputPorts:
             self.outputPorts.append(port)
 
+    def tryConnectID(self, ID1, ID2):
+        port1 = self.window.bricks[ID1[0]].ports[ID1[1]]
+        port2 = self.window.bricks[ID2[0]].ports[ID2[1]]
+        if port1.isConnectedTo(port2):
+            return
+        if port1.portType != port2.portType:
+            port1.connections.append(port2)
+            port2.connections.append(port1)
+            port1.isConnected = True
+            port2.isConnected = True
+
     def tryConnect(self, port, mousePos):
         mousePos = port.mapToGlobal(mousePos) - QPoint(self.window.size().width(), 0)
         if port.portType == "Input":

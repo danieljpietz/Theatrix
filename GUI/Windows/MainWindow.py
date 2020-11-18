@@ -4,9 +4,11 @@
 ##
 from PyQt5.QtCore import QRect, QSize
 from PyQt5.QtGui import QPainterPath
-from PyQt5.QtWidgets import QMainWindow, QGridLayout
-
-
+from PyQt5.QtWidgets import QMainWindow, QGridLayout, QPushButton
+import pickle as pickle
+import os.path
+from os import path
+import time as tm
 from GUI.Windows.ConnectionHandler import *
 
 
@@ -35,19 +37,109 @@ class MainWindow(QMainWindow):
         self.connectionManager.setParent(self)
         self.connectionManager.setParentWindow(self)
         self.connectionManager.show()
-
         self.selectedBricks = []
         self.boxedRects = []
-
+        self.cueID = 0
         self.updateID = 0
         self.updateManager = None
         self.outputBricks = []
         self.copyBuffer = []
-
-        self.addBrick(Fixture, QPoint(400, 400))
+        self.brickCount = 0
         self.addBrick(BrickTime, QPoint(200, 200))
+        self.addBrick(Fixture, QPoint(400, 400))
+
+        self.cueIndexLabel = QLabel(self)
+        self.cueIndexLabel.move(0, 0)
+        self.cueIndexLabel.resize(200, 30)
+        self.cueIndexLabel.setStyleSheet("color: rgb(255, 255, 255);")
+        self.cueIndexLabel.setParent(self)
+        self.cueIndexLabel.setText("Cue Index: " + str(self.cueID))
+        self.cueIndexLabel.setAlignment(Qt.AlignCenter)
+        self.cueIndexLabel.show()
+
+        self.cueIndexButton = QPushButton(self)
+        self.cueIndexButton.move(0, 30)
+        self.cueIndexButton.resize(200, 30)
+        self.cueIndexButton.setStyleSheet("color: rgb(255, 255, 255);")
+        self.cueIndexButton.setParent(self)
+        self.cueIndexButton.setText("+")
+        self.cueIndexButton.show()
+        self.cueIndexButton.clicked.connect(self.cueUp)
+
+        self.cueIndexButton2 = QPushButton(self)
+        self.cueIndexButton2.move(0, 60)
+        self.cueIndexButton2.resize(200, 30)
+        self.cueIndexButton2.setStyleSheet("color: rgb(255, 255, 255);")
+        self.cueIndexButton2.setParent(self)
+        self.cueIndexButton2.setText("-")
+        self.cueIndexButton2.show()
+        self.cueIndexButton2.clicked.connect(self.cueDown)
+
+        self.timeMod = tm.time()
 
         pass
+
+
+    def cueUp(self):
+        Bricks = []
+        ConnectionsFull = []
+        for brick in self.bricks:
+            brickType = Bricktionary[type(brick)]
+            if brickType == "Value":
+                Bricks.append([Bricktionary[type(brick)], brick.pos(), brick.textbox.text()])
+            else:
+                Bricks.append([Bricktionary[type(brick)], brick.pos()])
+
+            for port in brick.ports:
+                for connection in port.connections:
+                    ConnectionsFull.append(
+                        [[brick.brickID, port.portID], [connection.parent.brickID, connection.portID]])
+
+        PickleObj = [Bricks, ConnectionsFull]
+        f = open("Cues/" + str(self.cueID) + ".thx", "wb+")
+        pickle.dump(PickleObj, f)
+        f.close()
+        self.loadFile("Cues/" + str(self.cueID + 1) + ".thx")
+        self.cueID = self.cueID + 1
+        self.cueIndexLabel = QLabel(self)
+        self.cueIndexLabel.move(0, 0)
+        self.cueIndexLabel.resize(200, 30)
+        self.cueIndexLabel.setStyleSheet("color: rgb(255, 255, 255);")
+        self.cueIndexLabel.setParent(self)
+        self.cueIndexLabel.setText("Cue Index: " + str(self.cueID))
+        self.cueIndexLabel.setAlignment(Qt.AlignCenter)
+        self.cueIndexLabel.show()
+        self.timeMod = tm.time()
+    def cueDown(self):
+        Bricks = []
+        ConnectionsFull = []
+        for brick in self.bricks:
+            brickType = Bricktionary[type(brick)]
+            if brickType == "Value":
+                Bricks.append([Bricktionary[type(brick)], brick.pos(), brick.textbox.text()])
+            else:
+                Bricks.append([Bricktionary[type(brick)], brick.pos()])
+
+            for port in brick.ports:
+                for connection in port.connections:
+                    ConnectionsFull.append(
+                        [[brick.brickID, port.portID], [connection.parent.brickID, connection.portID]])
+
+        PickleObj = [Bricks, ConnectionsFull]
+        f = open("Cues/" + str(self.cueID) + ".thx", "wb+")
+        pickle.dump(PickleObj, f)
+        f.close()
+        self.loadFile("Cues/" + str(self.cueID - 1) + ".thx")
+        self.cueID = self.cueID - 1
+        self.cueIndexLabel = QLabel(self)
+        self.cueIndexLabel.move(0, 0)
+        self.cueIndexLabel.resize(200, 30)
+        self.cueIndexLabel.setStyleSheet("color: rgb(255, 255, 255);")
+        self.cueIndexLabel.setParent(self)
+        self.cueIndexLabel.setText("Cue Index: " + str(self.cueID))
+        self.cueIndexLabel.setAlignment(Qt.AlignCenter)
+        self.cueIndexLabel.show()
+        self.timeMod = tm.time()
 
     def updateDMX(self):
         for brick in self.outputBricks:
@@ -55,6 +147,8 @@ class MainWindow(QMainWindow):
 
     def addBrick(self, brickClass, pos):
         brick = brickClass()
+        brick.brickID = self.brickCount
+        self.brickCount = self.brickCount + 1
         brick.setParentWindow(self)
         brick.setParent(self)
         brick.move(pos.x(), pos.y())
@@ -100,6 +194,13 @@ class MainWindow(QMainWindow):
         for brick in self.selectedBricks:
             for port in brick.inputPorts + brick.outputPorts:
                 port.disconnectAll()
+            if brick in self.bricks:
+                self.bricks.remove(brick)
+            brick.kill()
+        self.brickCount = 0
+        for brick in self.bricks:
+            brick.brickID = self.brickCount
+            self.brickCount = self.brickCount + 1
         self.update()
 
     def mousePressEvent(self, event):
@@ -218,6 +319,26 @@ class MainWindow(QMainWindow):
                         self.deselect(brick)
                         self.boxedRects.remove(brick)
 
+    def loadFile(self, file):
+        self.timeMod = tm.time()
+        if path.exists(file):
+            for brick in self.bricks:
+                self.selectedBricks.append(brick)
+            self.deleteSelected()
+            f = open(file, 'rb')
+            FileData = pickle.load(f)
+            f.close()
+            Bricks = FileData[0]
+            Connections = FileData[1]
+            for brick in Bricks:
+                self.addBrick(Bricktionary[brick[0]], brick[1])
+                if brick[0] == "Value":
+                    self.bricks[-1].textbox.setText(str(brick[2]))
+            for connectionID in Connections:
+                self.connectionManager.tryConnectID(connectionID[0], connectionID[1])
+
+
+
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_C:
             self.copySelected()
@@ -233,5 +354,85 @@ class MainWindow(QMainWindow):
         elif event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_V:
             self.pasteSelected()
         elif event.key() == Qt.Key_Delete or event.key() == Qt.Key_Backspace:
-            print("Del")
             self.deleteSelected()
+        elif event.key() == Qt.Key_S and event.modifiers() == Qt.ControlModifier:
+            Bricks = []
+            ConnectionsFull = []
+            for brick in self.bricks:
+                brickType = Bricktionary[type(brick)]
+                if brickType == "Value":
+                    Bricks.append([Bricktionary[type(brick)], brick.pos(), brick.textbox.text()])
+                else:
+                    Bricks.append([Bricktionary[type(brick)], brick.pos()])
+
+                for port in brick.ports:
+                    for connection in port.connections:
+                        ConnectionsFull.append([[brick.brickID,port.portID], [connection.parent.brickID, connection.portID]])
+            Connections = []
+            if len(ConnectionsFull) > 0:
+                for i in range(0, int(len(ConnectionsFull) / 2) + 1):
+                    Connections.append(ConnectionsFull[i])
+                    pass
+            PickleObj = [Bricks, ConnectionsFull]
+            f = open("Cues/" + str(self.cueID) + ".thx", "wb+")
+            pickle.dump(PickleObj, f)
+            f.close()
+
+        elif event.key() == Qt.Key_Right:
+            Bricks = []
+            ConnectionsFull = []
+            for brick in self.bricks:
+                brickType = Bricktionary[type(brick)]
+                if brickType == "Value":
+                    Bricks.append([Bricktionary[type(brick)], brick.pos(), brick.textbox.text()])
+                else:
+                    Bricks.append([Bricktionary[type(brick)], brick.pos()])
+
+                for port in brick.ports:
+                    for connection in port.connections:
+                        ConnectionsFull.append(
+                            [[brick.brickID, port.portID], [connection.parent.brickID, connection.portID]])
+            PickleObj = [Bricks, ConnectionsFull]
+            f = open("Cues/" + str(self.cueID) + ".thx", "wb+")
+            pickle.dump(PickleObj, f)
+            f.close()
+            self.loadFile("Cues/" + str(self.cueID + 1) + ".thx")
+            self.cueID = self.cueID + 1
+            self.cueIndexLabel = QLabel(self)
+            self.cueIndexLabel.move(0, 0)
+            self.cueIndexLabel.resize(200, 30)
+            self.cueIndexLabel.setStyleSheet("color: rgb(255, 255, 255);")
+            self.cueIndexLabel.setParent(self)
+            self.cueIndexLabel.setText("Cue Index: " + str(self.cueID))
+            self.cueIndexLabel.setAlignment(Qt.AlignCenter)
+            self.cueIndexLabel.show()
+
+        elif event.key() == Qt.Key_Left:
+            Bricks = []
+            ConnectionsFull = []
+            for brick in self.bricks:
+                brickType = Bricktionary[type(brick)]
+                if brickType == "Value":
+                    Bricks.append([Bricktionary[type(brick)], brick.pos(), brick.textbox.text()])
+                else:
+                    Bricks.append([Bricktionary[type(brick)], brick.pos()])
+
+                for port in brick.ports:
+                    for connection in port.connections:
+                        ConnectionsFull.append(
+                            [[brick.brickID, port.portID], [connection.parent.brickID, connection.portID]])
+
+            PickleObj = [Bricks, ConnectionsFull]
+            f = open("Cues/" + str(self.cueID) + ".thx", "wb+")
+            pickle.dump(PickleObj, f)
+            f.close()
+            self.loadFile("Cues/" + str(self.cueID - 1) + ".thx")
+            self.cueID = self.cueID - 1
+            self.cueIndexLabel = QLabel(self)
+            self.cueIndexLabel.move(0, 0)
+            self.cueIndexLabel.resize(200, 30)
+            self.cueIndexLabel.setStyleSheet("color: rgb(255, 255, 255);")
+            self.cueIndexLabel.setParent(self)
+            self.cueIndexLabel.setText("Cue Index: " + str(self.cueID))
+            self.cueIndexLabel.setAlignment(Qt.AlignCenter)
+            self.cueIndexLabel.show()
